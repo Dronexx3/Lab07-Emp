@@ -1,50 +1,43 @@
 version: '3'
 
 services:
-  vote:
-    build: ./vote  # Directorio donde está el Dockerfile de tu aplicación
+  flask-container:
+    build: ./flask  
     depends_on:
-      - redis
+      - redis-container
     ports:
       - "5000:80"
     networks:
-      - back-tier
- 
-  result: 
-    build: ./result
-    ports:
-      - "5001:80"
-    networks:
-      - back-tier
+      - my_network
 
-  worker:
-    build:
-      context: ./worker
-    depends_on:
-      - redis
-      - db
-    networks:
-      - back-tier
-
-  redis:
+  redis-container:
     build: ./redis
     ports:
       - "6379:6379"
     networks:
-      - back-tier
+      - my_network
 
-  db: 
-    build: ./db
+  csharp-container:
+    build:
+      context: ./c#
+    depends_on:
+      - redis-container
+      - postgres
+    networks:
+      - my_network
+
+  postgres:
+    build: ./postgres
     ports:
       - "5432:5432"
     volumes: 
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - back-tier  
+      - my_network  
+
+networks:
+  my_network:
+    driver: bridge
 
 volumes: 
   postgres_data:
-
-networks:
-  back-tier:
-    driver: bridge  # Usa la red bridge por defecto
